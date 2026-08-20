@@ -1,0 +1,23 @@
+# Code review graph tool state (local, machine-specific)
+.code-review-graph/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+build/
+dist/
+
+# App output / user data
+*.xlsx
+!examples/*.xlsx
+monoamine concentration *.xlsx
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

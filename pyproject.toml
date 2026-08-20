@@ -1,0 +1,24 @@
+[project]
+name = "no-stress-ma-concentration-calculator"
+version = "1.0.0"
+description = "Plug-and-play desktop calculator for tissue monoamine concentrations from HPLC peak areas, with fully editable calibration constants."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "pandas>=2.0",
+    "openpyxl>=3.1",
+]
+
+[project.scripts]
+no-stress-ma = "monoamine_calc.gui.app:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["monoamine_calc*"]
