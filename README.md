@@ -1,14 +1,27 @@
 # no-stress-MA-concentration-calculator
 
-A plug-and-play desktop app that computes tissue monoamine concentrations
-from HPLC peak areas, using a DHBA internal standard and an external
-standard dilution series. It is a Python/tkinter port of
+A plug-and-play desktop app (and a browser-only web version) that computes
+tissue monoamine concentrations from HPLC peak areas, using a DHBA internal
+standard and an external standard dilution series. It is a port of
 [`monoamine calculation program.R`](reference/monoamine%20calculation%20program.R),
 with every fixed calibration number made editable and saveable.
 
 No RStudio, no clipboard-juggling between two `read.delim("clipboard")`
 calls, no hunting through R source to update a standard weight before a new
 run.
+
+**Two ways to use it:**
+
+- **[Web version](https://mbel-tech.github.io/no-stress-MA-concentration-calculator/)**
+  &mdash; open the link, paste your data, done. Runs entirely client-side (a
+  static page hosted on GitHub Pages); nothing is uploaded anywhere. Good for
+  a quick calculation on any machine.
+- **Desktop app** (this README) &mdash; the full-featured Python/tkinter
+  version below: named presets, file/clipboard loading, and a styled
+  `.xlsx` export with provenance sheets.
+
+Both share the exact same calculation engine and config schema &mdash; a
+constants file downloaded from one can be loaded into the other.
 
 ## What it computes
 
@@ -85,16 +98,47 @@ pyinstaller --onefile --windowed --name "no-stress-MA-calculator" -m monoamine_c
 
 The `.exe` will be under `dist/`.
 
+## Web version
+
+[docs/](docs/) is a self-contained static site (`index.html` + `app.js` +
+`style.css`, no build step, no dependencies) that reimplements the same
+engine, config, and parsing logic in plain JavaScript, and is published via
+GitHub Pages straight from this repo at
+<https://mbel-tech.github.io/no-stress-MA-concentration-calculator/>.
+
+To run it locally instead of using the hosted version:
+
+```bash
+cd docs
+python -m http.server 8000
+```
+
+then open <http://localhost:8000>. (Opening `docs/index.html` directly as a
+`file://` URL also works in most browsers.)
+
+It covers the core workflow &mdash; paste data, edit constants, calculate,
+download CSV &mdash; using `localStorage` in place of the desktop app's
+saved presets. For named presets, an `.xlsx` export with provenance sheets,
+and file/clipboard loading, use the desktop app instead.
+
 ## Running the tests
+
+**Python (engine, config, parsing, Excel export):**
 
 ```bash
 pip install -r requirements-dev.txt
 pytest
 ```
 
-The test suite includes an end-to-end golden fixture with values
+**JavaScript (web engine, numeric parity with the Python/R values):**
+
+```bash
+node tests/web/engine.test.js
+```
+
+Both suites check the same end-to-end golden fixture, with values
 hand-derived from the R script's formulas, so a change that alters the
-math will fail loudly.
+math in either implementation will fail loudly.
 
 ## Deliberate deviations from the R script
 
@@ -123,9 +167,15 @@ monoamine_calc/
 ├── engine.py             # the pure calculation, no I/O or GUI
 ├── excel_out.py           # styled .xlsx writer
 └── gui/                    # tkinter front-end (Data / Constants / Results tabs)
-tests/                        # pytest suite, incl. the golden-value fixture
-examples/                      # sample input files
-reference/                      # the original R script, kept for provenance
+docs/                          # web version: static site published via GitHub Pages
+├── index.html                  # markup for the Data / Constants / Results tabs
+├── app.js                       # JS port of config.py + parsing.py + engine.py
+├── style.css                     # styling (light/dark)
+└── defaults.json                  # same schema as monoamine_calc/defaults.json
+tests/                              # pytest suite, incl. the golden-value fixture
+└── web/engine.test.js               # JS numeric-parity test for docs/app.js
+examples/                             # sample input files
+reference/                             # the original R script, kept for provenance
 ```
 
 `engine.py` has no GUI or file-I/O imports — it is reusable directly from a

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>no-stress MA concentration calculator</title>
+  <meta name="description" content="Compute tissue monoamine concentrations from HPLC peak areas, entirely in your browser -- no install, no server." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="page-header">
+    <h1>no-stress MA concentration calculator</h1>
+    <p class="subtitle">
+      Web version &mdash; runs entirely in your browser, nothing is uploaded anywhere.
+      Same maths as the
+      <a href="https://github.com/mbel-tech/no-stress-MA-concentration-calculator" target="_blank" rel="noopener">desktop app</a>,
+      ported from <code>monoamine calculation program.R</code>.
+    </p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-button active" data-tab="dataTab">1. Data</button>
+    <button class="tab-button" data-tab="constantsTab">2. Constants</button>
+    <button class="tab-button" data-tab="resultsTab">3. Results</button>
+  </nav>
+
+  <main>
+    <!-- ============================== DATA TAB ============================== -->
+    <section id="dataTab" class="tab-panel active">
+      <div class="toolbar">
+        <label>
+          Decimal separator in pasted data:
+          <select id="decimalSeparator">
+            <option value=".">. (dot)</option>
+            <option value=",">, (comma)</option>
+          </select>
+        </label>
+        <button id="loadExampleBtn" class="secondary">Load example data</button>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <h2>Samples</h2>
+          <p class="hint">
+            Columns: <code>SAMPLE_ID, MHPG, NE, DHBA, DOPAC, DA, 5-HIAA, 5-HT, PROTEIN, VOLUME</code><br />
+            PROTEIN in mg (Bradford assay), VOLUME in mL (0.1 mL standard, higher for a re-run).
+            Paste tab- or comma-separated text with a header row.
+          </p>
+          <textarea id="samplesText" rows="8" spellcheck="false" placeholder="Paste samples here, including the header row..."></textarea>
+          <div class="row-buttons">
+            <button id="clearSamplesBtn" class="secondary small">Clear</button>
+          </div>
+          <div id="samplesStatus" class="field-status"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Standards</h2>
+          <p class="hint">
+            Columns: <code>STD_ID, MHPG, NE, DHBA, DOPAC, DA, 5-HIAA, 5-HT</code><br />
+            Paste tab- or comma-separated text with a header row.
+          </p>
+          <textarea id="standardsText" rows="8" spellcheck="false" placeholder="Paste standards here, including the header row..."></textarea>
+          <div class="row-buttons">
+            <button id="clearStandardsBtn" class="secondary small">Clear</button>
+          </div>
+          <div id="standardsStatus" class="field-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ CONSTANTS TAB ============================ -->
+    <section id="constantsTab" class="tab-panel">
+      <p class="hint">
+        Every fixed number from the R script, editable here. Changes are saved to this browser automatically when you
+        click <strong>Apply</strong> or <strong>Calculate</strong>, and persist across visits (nothing leaves your machine).
+      </p>
+
+      <div class="table-wrap">
+        <table class="constants-table">
+          <thead>
+            <tr>
+              <th>Analyte</th>
+              <th>Standard weight (mg)</th>
+              <th>MW ratio</th>
+              <th>Apply MW correction</th>
+              <th>Formula</th>
+              <th>Internal standard</th>
+            </tr>
+          </thead>
+          <tbody id="analyteTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="constants-grid">
+        <div class="field">
+          <label for="stepADivisor">Step A divisor</label>
+          <input id="stepADivisor" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="stepBMultiplier">Step B multiplier</label>
+          <input id="stepBMultiplier" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="stepCMultiplier">Step C multiplier</label>
+          <input id="stepCMultiplier" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="stepDDivisor">Step D divisor</label>
+          <input id="stepDDivisor" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="stepEDivisor">Step E divisor</label>
+          <input id="stepEDivisor" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="stepFDivisor">Step F divisor</label>
+          <input id="stepFDivisor" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="stdStep">Use standard concentration from</label>
+          <select id="stdStep">
+            <option value="E">Step E</option>
+            <option value="F">Step F</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="roundDecimals">Round results to (decimals)</label>
+          <input id="roundDecimals" type="number" step="1" min="0" max="10" />
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button id="applyConstantsBtn">Apply changes</button>
+        <button id="resetConstantsBtn" class="secondary">Reset to defaults</button>
+        <button id="downloadConfigBtn" class="secondary">Download config (.json)</button>
+        <label class="file-button secondary">
+          Load config (.json)
+          <input id="loadConfigFile" type="file" accept="application/json,.json" hidden />
+        </label>
+      </div>
+      <div id="constantsStatus" class="field-status"></div>
+    </section>
+
+    <!-- ============================= RESULTS TAB ============================= -->
+    <section id="resultsTab" class="tab-panel">
+      <div class="toolbar">
+        <button id="calculateBtn" disabled>Calculate</button>
+        <span id="calculateHint" class="hint"></span>
+      </div>
+      <div id="resultsStatus" class="field-status"></div>
+
+      <div id="warningsBox" class="warnings-box"></div>
+
+      <div id="resultsTableWrap" class="table-wrap"></div>
+
+      <div class="toolbar">
+        <button id="downloadCsvBtn" class="secondary" disabled>Download CSV</button>
+        <button id="toggleChainBtn" class="secondary">Show standard dilution chain</button>
+      </div>
+
+      <div id="chainSection" class="chain-section">
+        <h2>Standard dilution chain (A &rarr; F)</h2>
+        <div id="chainTableWrap" class="table-wrap"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>
+      For named presets, an <code>.xlsx</code> export with provenance sheets, and file/clipboard loading, see the
+      <a href="https://github.com/mbel-tech/no-stress-MA-concentration-calculator" target="_blank" rel="noopener">desktop app</a>
+      in this repo. MIT licensed.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
