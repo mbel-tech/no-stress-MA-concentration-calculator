@@ -81,6 +81,7 @@ def _constants_rows(config: Config) -> pd.DataFrame:
         {"Analyte": "Step F divisor", "Standard weight (mg)": d.step_f_divisor},
         {"Analyte": "STD step used", "Standard weight (mg)": config.std_step},
         {"Analyte": "Rounding (decimals)", "Standard weight (mg)": config.round_decimals},
+        {"Analyte": "Concentration unit", "Standard weight (mg)": config.concentration_unit()},
     ])
     return pd.concat([df, meta], ignore_index=True)
 

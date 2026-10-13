@@ -46,6 +46,10 @@ header row, either pasted, read from the clipboard, or loaded from a
 **Samples** — `SAMPLE_ID, MHPG, NE, DHBA, DOPAC, DA, 5-HIAA, 5-HT, PROTEIN, VOLUME`
 (PROTEIN in mg from a Bradford assay; VOLUME in mL — 0.1 mL is standard,
 higher for a re-run).
+If you have tissue / body-part weight instead of a protein assay, put the weight
+(mg) in that column (a `WEIGHT` header also works) and set **Normalise by** to
+*Tissue / body-part weight* on the Data tab: the maths is identical and results
+are labelled ng/mg tissue instead of ng/mg protein.
 
 **Standards** — `STD_ID, MHPG, NE, DHBA, DOPAC, DA, 5-HIAA, 5-HT`.
 

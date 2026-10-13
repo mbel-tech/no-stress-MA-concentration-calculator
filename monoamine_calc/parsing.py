@@ -28,6 +28,8 @@ import pandas as pd
 from .config import normalize_analyte_name
 
 SAMPLE_COLUMNS = ["SAMPLE_ID", "MHPG", "NE", "DHBA", "DOPAC", "DA", "5-HIAA", "5-HT", "PROTEIN", "VOLUME"]
+# Tissue/body-part weight is entered in the PROTEIN column slot (see Config.normalise_by).
+SAMPLE_ALIASES = {"WEIGHT": "PROTEIN", "TISSUE_WEIGHT": "PROTEIN", "TISSUE": "PROTEIN"}
 STANDARD_COLUMNS = ["STD_ID", "MHPG", "NE", "DHBA", "DOPAC", "DA", "5-HIAA", "5-HT"]
 
 SAMPLE_NUMERIC_COLUMNS = [c for c in SAMPLE_COLUMNS if c != "SAMPLE_ID"]
@@ -83,7 +85,9 @@ def read_file(path: Path) -> pd.DataFrame:
 # Column validation + assignment
 # ---------------------------------------------------------------------------
 
-def assign_columns(df: pd.DataFrame, expected: list[str], label: str) -> ParseResult:
+def assign_columns(
+    df: pd.DataFrame, expected: list[str], label: str, aliases: dict[str, str] | None = None
+) -> ParseResult:
     """Validate column count, then assign `expected` names -- preferring a
     name-based match (case/punctuation-insensitive) over the R script's
     blind positional overwrite. Falls back to positional with a note."""
@@ -95,7 +99,8 @@ def assign_columns(df: pd.DataFrame, expected: list[str], label: str) -> ParseRe
         )
 
     expected_norm = [normalize_analyte_name(c) for c in expected]
-    actual_norm = [normalize_analyte_name(str(c)) for c in df.columns]
+    alias_norm = {normalize_analyte_name(k): normalize_analyte_name(v) for k, v in (aliases or {}).items()}
+    actual_norm = [alias_norm.get(n, n) for n in (normalize_analyte_name(str(c)) for c in df.columns)]
 
     if sorted(expected_norm) == sorted(actual_norm):
         # Reorder columns to match `expected` by name rather than assuming
@@ -168,7 +173,7 @@ def coerce_numeric_columns(df: pd.DataFrame, columns: list[str], decimal_separat
 # ---------------------------------------------------------------------------
 
 def load_samples(df: pd.DataFrame, decimal_separator: str = ".") -> ParseResult:
-    result = assign_columns(df, SAMPLE_COLUMNS, "samples")
+    result = assign_columns(df, SAMPLE_COLUMNS, "samples", aliases=SAMPLE_ALIASES)
     result.df = coerce_numeric_columns(result.df, SAMPLE_NUMERIC_COLUMNS, decimal_separator)
     _check_missing_ids(result.df, "SAMPLE_ID", "samples")
     return result

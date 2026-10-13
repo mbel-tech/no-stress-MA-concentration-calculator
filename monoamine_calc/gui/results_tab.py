@@ -29,9 +29,9 @@ class ResultsTab(ttk.Frame):
         self.warnings_text.configure(state="disabled")
         # not packed until there is something to show
 
-        ttk.Label(self, text="Concentrations (ng/mg protein)", font=("", 10, "bold")).pack(
-            anchor="w", pady=(10, 2)
-        )
+        self.title_label = ttk.Label(self, font=("", 10, "bold"))
+        self.title_label.pack(anchor="w", pady=(10, 2))
+        self._set_title()
         result_frame = ttk.Frame(self)
         result_frame.pack(fill="both", expand=True)
         self.result_tree = ttk.Treeview(result_frame, height=10)
@@ -56,8 +56,12 @@ class ResultsTab(ttk.Frame):
         self.chain_frame.grid_columnconfigure(0, weight=1)
         self._chain_visible = False
 
+    def _set_title(self):
+        self.title_label.configure(text=f"Concentrations ({self.app.config_obj.concentration_unit()})")
+
     def show_result(self, result: CalculationResult) -> None:
         self.result = result
+        self._set_title()
         populate_readonly_tree(self.result_tree, result.concentrations)
         populate_readonly_tree(self.chain_tree, result.std_chain, decimals=4)
         self.export_btn.configure(state="normal")

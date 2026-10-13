@@ -54,7 +54,15 @@ const DEFAULTS = {
   ratio_pairs: [["MHPG", "NE"], ["DOPAC", "DA"], ["5-HIAA", "5-HT"]],
   output_order: ["SAMPLE_ID", "5-HT", "5-HIAA", "5-HIAA/5-HT", "DA", "DOPAC", "DOPAC/DA", "NE", "MHPG", "MHPG/NE"],
   decimal_separator: ".",
+  normalise_by: "protein",
 };
+
+// What the PROTEIN column is divided by -> unit label shown on results.
+const NORMALISE_UNITS = { protein: "ng/mg protein", weight: "ng/mg tissue" };
+
+function normaliseBy(cfg) {
+  return cfg.normalise_by || "protein"; // configs saved before this option existed
+}
 
 function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -82,6 +90,9 @@ function validateConfig(cfg) {
   }
   if (![".", ","].includes(cfg.decimal_separator)) {
     throw new Error("decimal_separator must be '.' or ','");
+  }
+  if (!(normaliseBy(cfg) in NORMALISE_UNITS)) {
+    throw new Error("normalise_by must be 'protein' or 'weight'");
   }
   for (const a of cfg.analytes) {
     if (!a.is_internal_standard && (a.standard_weight_mg === null || a.standard_weight_mg === undefined || Number.isNaN(a.standard_weight_mg))) {
@@ -122,13 +133,19 @@ function readDelimitedText(text) {
   return { header: rows[0], body: rows.slice(1) };
 }
 
-function assignColumns(header, body, expected, label) {
+// Tissue / body-part weight goes in the PROTEIN column slot (see normalise_by).
+const SAMPLE_ALIASES = { WEIGHT: "PROTEIN", TISSUEWEIGHT: "PROTEIN", TISSUE: "PROTEIN" };
+
+function assignColumns(header, body, expected, label, aliases = {}) {
   const notes = [];
   if (header.length !== expected.length) {
     throw new Error(`${label} must have ${expected.length} columns; found ${header.length} (${header.join(", ")}).`);
   }
   const expectedNorm = expected.map(normalizeAnalyteName);
-  const actualNorm = header.map((h) => normalizeAnalyteName(String(h)));
+  const actualNorm = header.map((h) => {
+    const n = normalizeAnalyteName(String(h));
+    return aliases[n] || n;
+  });
 
   const sortedEq = (a, b) => {
     const sa = [...a].sort();
@@ -175,7 +192,7 @@ function checkMissingIds(rows, idCol, label) {
 
 function loadSamples(text, decimalSeparator) {
   const { header, body } = readDelimitedText(text);
-  const { rows, notes } = assignColumns(header, body, SAMPLE_COLUMNS, "samples");
+  const { rows, notes } = assignColumns(header, body, SAMPLE_COLUMNS, "samples", SAMPLE_ALIASES);
   const numeric = coerceNumericColumns(rows, SAMPLE_NUMERIC_COLUMNS, decimalSeparator);
   checkMissingIds(numeric, "SAMPLE_ID", "samples");
   return { rows: numeric, notes };
@@ -271,7 +288,7 @@ function computeK(sampleRows, meanAreas, cfg) {
     if (isZero) {
       k[r.SAMPLE_ID] = NaN;
       warnings.push(
-        `Sample ${r.SAMPLE_ID}: ${internal.name} area or PROTEIN is zero/missing -- K could not be computed (shown as blank, not Infinity).`
+        `Sample ${r.SAMPLE_ID}: ${internal.name} area or ${cfg && normaliseBy(cfg) === "weight" ? "weight" : "PROTEIN"} is zero/missing -- K could not be computed (shown as blank, not Infinity).`
       );
     } else {
       k[r.SAMPLE_ID] = (stdAvgInternal * r.VOLUME) / denom;
@@ -421,6 +438,11 @@ function initDataTab() {
     config.decimal_separator = e.target.value;
     saveActiveConfig(config);
   });
+  $("normaliseBy").value = normaliseBy(config);
+  $("normaliseBy").addEventListener("change", (e) => {
+    config.normalise_by = e.target.value;
+    saveActiveConfig(config);
+  });
 
   $("loadExampleBtn").addEventListener("click", () => {
     $("samplesText").value = EXAMPLE_SAMPLES_TSV;
@@ -568,6 +590,8 @@ function renderConstantsForm() {
   $("stepFDivisor").value = d.step_f_divisor;
   $("stdStep").value = config.std_step;
   $("roundDecimals").value = config.round_decimals;
+  $("decimalSeparator").value = config.decimal_separator;
+  $("normaliseBy").value = normaliseBy(config);
 }
 
 function readConstantsForm() {
@@ -667,6 +691,8 @@ function renderResults(result) {
   } else {
     warnBox.className = "warnings-box";
   }
+
+  $("resultsUnit").textContent = `Concentrations in ${NORMALISE_UNITS[normaliseBy(config)]}`;
 
   // Results table
   const wrap = $("resultsTableWrap");

@@ -135,3 +135,14 @@ def test_reset_to_defaults_overwrites_active_config(monkeypatch, tmp_path):
     restored = reset_to_defaults()
     assert restored.analyte("NE").standard_weight_mg == pytest.approx(15.04)
     assert load_active_or_defaults().analyte("NE").standard_weight_mg == pytest.approx(15.04)
+
+
+def test_normalise_by_defaults_and_validation():
+    cfg = load_defaults()
+    assert cfg.normalise_by == "protein"
+    assert cfg.concentration_unit() == "ng/mg protein"
+    cfg.normalise_by = "weight"
+    assert cfg.concentration_unit() == "ng/mg tissue"
+    cfg.normalise_by = "bogus"
+    with pytest.raises(ConfigError):
+        cfg.validate()

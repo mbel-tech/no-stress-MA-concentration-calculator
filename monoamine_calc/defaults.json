@@ -81,5 +81,6 @@
 
   "output_order": ["SAMPLE_ID", "5-HT", "5-HIAA", "5-HIAA/5-HT", "DA", "DOPAC", "DOPAC/DA", "NE", "MHPG", "MHPG/NE"],
 
-  "decimal_separator": "."
+  "decimal_separator": ".",
+  "normalise_by": "protein"
 }
