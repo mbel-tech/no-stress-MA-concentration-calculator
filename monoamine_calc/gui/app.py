@@ -46,6 +46,7 @@ class App(tk.Tk):
         self.config_obj = cfg
         self.constants_tab.load_config(cfg)
         self.data_tab.sep_var.set(cfg.decimal_separator)
+        self.data_tab.norm_var.set(cfg.normalise_by)
 
     def on_dataset_loaded(self) -> None:
         self.status_var.set("Data loaded. Review the Constants tab, then click Calculate.")

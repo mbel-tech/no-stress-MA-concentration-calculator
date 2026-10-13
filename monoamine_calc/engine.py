@@ -103,6 +103,8 @@ def mean_standard_areas(standards: pd.DataFrame, config: Config) -> pd.Series:
 def compute_k(samples: pd.DataFrame, mean_areas: pd.Series, config: Config) -> tuple[pd.Series, list[str]]:
     """K = (mean_std_area[internal_standard] * VOLUME) / (sample_area[internal_standard] * PROTEIN)
 
+    PROTEIN holds mg protein, or mg tissue weight when config.normalise_by == "weight".
+
     Returns (K indexed by SAMPLE_ID, warnings for rows with a zero
     denominator -- the R script would silently produce Inf there)."""
     internal = config.internal_standard_spec()
@@ -132,10 +134,11 @@ def compute_k(samples: pd.DataFrame, mean_areas: pd.Series, config: Config) -> t
     k_values = pd.Series(k_values).mask(zero_mask.to_numpy(), other=np.nan)
     k = pd.Series(k_values.to_numpy(), index=samples["SAMPLE_ID"].to_numpy())
 
+    label = "weight" if config.normalise_by == "weight" else "PROTEIN"
     for sample_id, is_zero in zip(samples["SAMPLE_ID"], zero_mask):
         if is_zero:
             warnings.append(
-                f"Sample {sample_id}: {internal.name} area or PROTEIN is zero/missing -- "
+                f"Sample {sample_id}: {internal.name} area or {label} is zero/missing -- "
                 "K could not be computed (shown as blank, not Infinity)."
             )
     return k, warnings

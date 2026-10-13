@@ -177,3 +177,19 @@ test("positional column fallback triggers with a note when headers don't match b
 });
 
 console.log(`\n${passed} passed`);
+
+test("WEIGHT header is accepted in place of PROTEIN", () => {
+  const text =
+    "SAMPLE_ID\tMHPG\tNE\tDHBA\tDOPAC\tDA\t5-HIAA\t5-HT\tWeight\tVOLUME\nA1\t90\t210\t480\t310\t390\t240\t360\t1.5\t0.1";
+  const { rows, notes } = loadSamples(text, ".");
+  assert.strictEqual(rows[0].PROTEIN, 1.5);
+  assert.strictEqual(notes.length, 0);
+});
+
+test("normalise_by is validated and legacy configs default to protein", () => {
+  const legacy = deepClone(DEFAULTS);
+  delete legacy.normalise_by;
+  validateConfig(legacy);
+  legacy.normalise_by = "bogus";
+  assert.throws(() => validateConfig(legacy), /normalise_by/);
+});

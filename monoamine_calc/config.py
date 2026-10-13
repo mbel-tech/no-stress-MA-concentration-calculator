@@ -31,6 +31,10 @@ ACTIVE_CONFIG_PATH = USER_DIR / "config.json"
 PRESETS_DIR = USER_DIR / "presets"
 
 
+# normalise_by -> unit label shown on results
+NORMALISE_UNITS = {"protein": "ng/mg protein", "weight": "ng/mg tissue"}
+
+
 class ConfigError(ValueError):
     """Raised when a config file is structurally invalid."""
 
@@ -73,6 +77,12 @@ class Config:
     ratio_pairs: list[tuple[str, str]] = field(default_factory=list)
     output_order: list[str] = field(default_factory=list)
     decimal_separator: str = "."
+    # What the PROTEIN column is divided by: "protein" (mg protein, Bradford)
+    # or "weight" (mg of tissue / body-part weight). Same maths, different unit.
+    normalise_by: str = "protein"
+
+    def concentration_unit(self) -> str:
+        return NORMALISE_UNITS[self.normalise_by]
 
     # -- lookups -----------------------------------------------------------
 
@@ -122,6 +132,7 @@ class Config:
                 ratio_pairs=[tuple(p) for p in d.get("ratio_pairs", [])],
                 output_order=list(d.get("output_order", [])),
                 decimal_separator=d.get("decimal_separator", "."),
+                normalise_by=d.get("normalise_by", "protein"),
             )
         except (KeyError, TypeError) as exc:
             raise ConfigError(f"Malformed config: {exc}") from exc
@@ -143,6 +154,8 @@ class Config:
             raise ConfigError("std_step must be 'E' or 'F'")
         if self.decimal_separator not in (".", ","):
             raise ConfigError("decimal_separator must be '.' or ','")
+        if self.normalise_by not in NORMALISE_UNITS:
+            raise ConfigError("normalise_by must be 'protein' or 'weight'")
         for a in self.analytes:
             if not a.is_internal_standard and a.standard_weight_mg is None:
                 raise ConfigError(f"{a.name}: standard_weight_mg is required")

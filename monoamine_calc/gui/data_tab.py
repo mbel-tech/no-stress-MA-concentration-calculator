@@ -128,6 +128,15 @@ class DataTab(ttk.Frame):
         ttk.Radiobutton(sep_row, text="Comma ( , )  e.g. 1,5", variable=self.sep_var, value=",",
                          command=self._on_sep_change).pack(side="left")
 
+        norm_row = ttk.Frame(self)
+        norm_row.pack(fill="x", pady=(0, 8))
+        ttk.Label(norm_row, text="Normalise by (PROTEIN column holds):").pack(side="left")
+        self.norm_var = tk.StringVar(value=app.config_obj.normalise_by)
+        ttk.Radiobutton(norm_row, text="Protein (mg, Bradford)  -> ng/mg protein", variable=self.norm_var,
+                         value="protein", command=self._on_norm_change).pack(side="left", padx=(8, 4))
+        ttk.Radiobutton(norm_row, text="Tissue / body-part weight (mg)  -> ng/mg tissue", variable=self.norm_var,
+                         value="weight", command=self._on_norm_change).pack(side="left")
+
         panels = ttk.Frame(self)
         panels.pack(fill="both", expand=True)
         panels.grid_columnconfigure(0, weight=1)
@@ -143,6 +152,9 @@ class DataTab(ttk.Frame):
             panels, app, "Standards", parsing.load_standards, parsing.STANDARD_COLUMNS
         )
         self.standards_panel.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+
+    def _on_norm_change(self):
+        self.app.config_obj.normalise_by = self.norm_var.get()
 
     def _on_sep_change(self):
         self.app.config_obj.decimal_separator = self.sep_var.get()

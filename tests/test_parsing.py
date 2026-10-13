@@ -128,3 +128,13 @@ def test_load_samples_rejects_missing_sample_id():
     )
     with pytest.raises(ParsingError):
         load_samples(df, ".")
+
+
+def test_weight_header_is_accepted_in_place_of_protein():
+    df = pd.DataFrame(
+        [["A1", "90", "210", "480", "310", "390", "240", "360", "1.5", "0.1"]],
+        columns=["SAMPLE_ID", "MHPG", "NE", "DHBA", "DOPAC", "DA", "5-HIAA", "5-HT", "Weight", "VOLUME"],
+    )
+    result = load_samples(df)
+    assert result.used_name_matching
+    assert result.df["PROTEIN"][0] == pytest.approx(1.5)

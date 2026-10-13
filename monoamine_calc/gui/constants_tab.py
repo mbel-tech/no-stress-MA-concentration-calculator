@@ -171,6 +171,7 @@ class ConstantsTab(ttk.Frame):
             ratio_pairs=base.ratio_pairs,
             output_order=base.output_order,
             decimal_separator=base.decimal_separator,
+            normalise_by=base.normalise_by,
         )
         cfg.validate()
         return cfg
