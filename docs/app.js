@@ -38,7 +38,7 @@ const DEFAULTS = {
     { name: "DOPAC", standard_weight_mg: 4.44, mw_ratio: null, apply_mw_correction: false, formula: null, is_internal_standard: false },
     { name: "DA", standard_weight_mg: 10.78, mw_ratio: 0.807735771, apply_mw_correction: true, formula: "C8H11NO2 HCl", is_internal_standard: false },
     { name: "5-HIAA", standard_weight_mg: 8.40, mw_ratio: null, apply_mw_correction: false, formula: null, is_internal_standard: false },
-    { name: "5-HT", standard_weight_mg: 23.50, mw_ratio: 0.746839001, apply_mw_correction: true, formula: "C14H19N5O2 H2O4S", is_internal_standard: false },
+    { name: "5-HT", standard_weight_mg: 23.50, mw_ratio: 0.828568742, apply_mw_correction: true, formula: "C10H12N2O HCl", is_internal_standard: false },
   ],
   dilution: {
     step_a_divisor: 10.0,
