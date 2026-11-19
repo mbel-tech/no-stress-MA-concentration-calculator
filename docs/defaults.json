@@ -53,9 +53,9 @@
     {
       "name": "5-HT",
       "standard_weight_mg": 23.50,
-      "mw_ratio": 0.746839001,
+      "mw_ratio": 0.828568742,
       "apply_mw_correction": true,
-      "formula": "C14H19N5O2 H2O4S",
+      "formula": "C10H12N2O HCl",
       "is_internal_standard": false
     }
   ],

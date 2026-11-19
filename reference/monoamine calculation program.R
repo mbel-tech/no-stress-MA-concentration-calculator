@@ -69,10 +69,10 @@ STD_calc <- data.frame(
 # LOAD ml_wt_ratios directly in R
 ml_wt_ratios <- data.frame(
   Analyte = c("DA", "5-HT", "NE", "MHPG", "DHBA"),
-  Molecular_weight_ratios = c(0.807735771, 0.746839001, 0.822694209, 0.810486104, 0.632325536),
+  Molecular_weight_ratios = c(0.807735771, 0.828568742, 0.822694209, 0.810486104, 0.632325536),
   Formula = c(
     "C8H11NO2 HCl",
-    "C14H19N5O2 H2O4S",
+    "C10H12N2O HCl",
     "C8H11NO3 HCL",
     "(C9H12O4)2 C4H10N2",
     "C7H9NO2 BrH"

@@ -54,7 +54,7 @@ test("standard dilution chain matches R-derived golden values to 9dp", () => {
     DOPAC: { step_d: 35.52, corrected_d: 35.52, step_e: 5.92, step_f: 0.592 },
     DA: { step_d: 86.24, corrected_d: 69.659132891, step_e: 11.609855482, step_f: 1.160985548 },
     "5-HIAA": { step_d: 67.2, corrected_d: 67.2, step_e: 11.2, step_f: 1.12 },
-    "5-HT": { step_d: 188.0, corrected_d: 140.405732188, step_e: 23.400955365, step_f: 2.340095536 },
+    "5-HT": { step_d: 188.0, corrected_d: 155.770923496, step_e: 25.961820583, step_f: 2.596182058 },
     NE: { step_d: 120.32, corrected_d: 98.986567227, step_e: 16.497761204, step_f: 1.64977612 },
     MHPG: { step_d: 78.24, corrected_d: 78.24, step_e: 13.04, step_f: 1.304 },
   };
@@ -90,8 +90,8 @@ test("end-to-end golden fixture matches the Python/pytest expected output exactl
   approxEqual(result.k["A2"], 0.048113208, 1e-9, "K[A2]");
 
   const expectedRows = {
-    A1: { "5-HT": 0.176, "5-HIAA": 0.073, "5-HIAA/5-HT": 0.417, DA: 0.078, DOPAC: 0.045, "DOPAC/DA": 0.573, NE: 0.129, MHPG: 0.076, "MHPG/NE": 0.585 },
-    A2: { "5-HT": 0.106, "5-HIAA": 0.058, "5-HIAA/5-HT": 0.548, DA: 0.059, DOPAC: 0.027, "DOPAC/DA": 0.453, NE: 0.071, MHPG: 0.074, "MHPG/NE": 1.044 },
+    A1: { "5-HT": 0.195, "5-HIAA": 0.073, "5-HIAA/5-HT": 0.376, DA: 0.078, DOPAC: 0.045, "DOPAC/DA": 0.573, NE: 0.129, MHPG: 0.076, "MHPG/NE": 0.585 },
+    A2: { "5-HT": 0.118, "5-HIAA": 0.058, "5-HIAA/5-HT": 0.494, DA: 0.059, DOPAC: 0.027, "DOPAC/DA": 0.453, NE: 0.071, MHPG: 0.074, "MHPG/NE": 1.044 },
   };
 
   assert.deepStrictEqual(
